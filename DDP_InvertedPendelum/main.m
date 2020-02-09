@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%      DDP Inverted Pendelum       %%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%  Course: Robotics and Autonomy   %%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%  AE8803  Spring  2020            %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%  AE4803  Spring  2020            %%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%  Author: Alejandro Escontrela    %%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -9,9 +9,8 @@ visualizing_bundles_exists = exist('visualizing_bundles', 'var');
 visualizing_bundles = visualizing_bundles_exists && visualizing_bundles;
 
 if ~visualizing_bundles
-clear all;
-close all;
-visualizing_bundles=false;
+    close all;
+    visualizing_bundles=false;
 end
 
 global m1;
@@ -27,18 +26,18 @@ global time;
 m1 = 1.4; % Link mass in Kg.
 g = 9.8; % Gravity in m/s^2.
 b1 = 0; % Friction coefficient.
-l1 = 0.3; % Link length in meters.
+l1 = 1.0; % Link length in meters.
 I1 = m1 * l1^2; % Inertia in Kg*m^2.
 
 % Solver parameters.
-Horizon = 300; % Time Horizon.
-num_iter = 50; % Number of Iterations
+Horizon = 1000; % Time Horizon.
+num_iter = 100; % Number of Iterations
 dt = 0.01; % Discretization.
 
 % Costs.
 Q_f = zeros(2,2); % State cost. 2x2 since state is 2-dimensional.
-Q_f(1,1) = 100;
-Q_f(2,2) = 100;
+Q_f(1,1) = 800;
+Q_f(2,2) = 200;
 
 R = 2 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
 
@@ -52,17 +51,28 @@ du_k = zeros(1,Horizon-1); % Initial control variation.
 
 x_traj = zeros(2,Horizon); % Initial trajectory.
 
+Cost = zeros(1, num_iter); % Cost history.
+
 % Target:
 p_target(1,1) = pi; % Target theta.
-p_target(2,1) = 0; % Target theta_dot.
+p_target(2,1) = 0.0; % Target theta_dot.
 
 % Add noise.
-sigma = 0.002;
+sigma = 0.00;
 
 % Learning Rate
 gamma = 0.5;
 
 for k = 1:num_iter
+    % Preallocate cost memory.
+    q0 = zeros(Horizon-1);
+    q_k = zeros(2, Horizon-1);
+    Q_k = zeros(2, 2, Horizon-1);
+    r_k = zeros(1, Horizon-1);
+    R_k = zeros(1, 1, Horizon-1);
+    P_k = zeros(1, 2, Horizon-1);
+    A = zeros(2, 2, Horizon-1);
+    B = zeros(2, 1, Horizon-1);
     for  j = 1:(Horizon-1)    
         [l0,l_x,l_xx,l_u,l_uu,l_ux] = fnCost(x_traj(:,j), u_k(:,j), j,R,dt);
         % Compute loss function gradients for the current timestep.
@@ -80,6 +90,11 @@ for k = 1:num_iter
         B(:,:,j) = Fu * dt;  
     end
 
+    % Preallocate value function memory.
+    Vxx = zeros(2,2,Horizon);
+    Vx = zeros(2, Horizon);
+    V = zeros(1, Horizon);
+    
     % Compute value function at final timestep, its gradient, and its jacobian.
     Vxx(:,:,Horizon)= Q_f;
     Vx(:,Horizon) = Q_f * (x_traj(:,Horizon) - p_target); 
@@ -109,9 +124,11 @@ for k = 1:num_iter
         V(:,j) = q0(j) + V(j+1) + 0.5 *  l_k (:,j)' * H * l_k (:,j) + l_k (:,j)' * g_;
     end
 
-    % Find the controls.
+    % Preallocate control variation memory.
+    u_new = zeros(1, Horizon-1);
     dx = zeros(2,1);
-    for i=1:(Horizon-1)    
+    for i=1:(Horizon-1)
+        % Find the controls.
         du = l_k(:,i) + L_k(:,:,i) * dx;
         dx = A(:,:,i) * dx + B(:,:,i) * du;  
         u_new(:,i) = u_k(:,i) + gamma * du;
@@ -121,8 +138,8 @@ for k = 1:num_iter
 
     % Create new rollout.
     [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma);
-    [Cost(:,k)] =  fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
-    x1(k,:) = x_traj(1,:);
+    Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
+%     x1(k,:) = x_traj(1,:);
 
     if mod(k, 10) == 0
         fprintf('iLQG Iteration %d,  Current Cost = %e \n',k,Cost(1,k));
@@ -136,6 +153,6 @@ for i= 2:Horizon
 end
 
 if ~visualizing_bundles
-visualize;
-close(fh);
+    visualize;
+    close(fh);
 end

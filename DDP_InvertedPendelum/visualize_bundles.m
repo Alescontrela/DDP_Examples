@@ -5,7 +5,7 @@ global num_iter;
 
 
 visualizing_bundles = 1;
-bundle_iters = 10;
+bundle_iters = 20;
 x_trajs = zeros(bundle_iters, 2, Horizon);
 costs = zeros(bundle_iters, num_iter);
 

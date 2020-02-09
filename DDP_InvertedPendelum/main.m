@@ -5,15 +5,23 @@
 %%%%%%%%%%%%%%%%  Author: Alejandro Escontrela    %%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+visualizing_bundles_exists = exist('visualizing_bundles', 'var');
+visualizing_bundles = visualizing_bundles_exists && visualizing_bundles;
+
+if ~visualizing_bundles
 clear all;
 close all;
-
+visualizing_bundles=false;
+end
 
 global m1;
 global I1;
 global b1;
 global g;
 global l1;
+global Horizon;
+global time;
+
 
 % Environment parameters.
 m1 = 1.4; % Link mass in Kg.
@@ -32,7 +40,7 @@ Q_f = zeros(2,2); % State cost. 2x2 since state is 2-dimensional.
 Q_f(1,1) = 100;
 Q_f(2,2) = 100;
 
-R = 10 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
+R = 2 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
 
 % Initialize solution.
 xo = zeros(2,1);
@@ -47,6 +55,9 @@ x_traj = zeros(2,Horizon); % Initial trajectory.
 % Target:
 p_target(1,1) = pi; % Target theta.
 p_target(2,1) = 0; % Target theta_dot.
+
+% Add noise.
+sigma = 0.002;
 
 % Learning Rate
 gamma = 0.5;
@@ -109,7 +120,7 @@ for k = 1:num_iter
     u_k = u_new;
 
     % Create new rollout.
-    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,0);
+    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma);
     [Cost(:,k)] =  fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
     x1(k,:) = x_traj(1,:);
 
@@ -124,5 +135,7 @@ for i= 2:Horizon
     time(i) =time(i-1) + dt;  
 end
 
+if ~visualizing_bundles
 visualize;
 close(fh);
+end

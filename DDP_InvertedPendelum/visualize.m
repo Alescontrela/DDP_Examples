@@ -35,7 +35,6 @@ set(gcf,'Position', pos2 + [pos1(3)/2,0,0,0]) % Shift position of Figure(2)
 x = [0, l1 * sin(xo(1))];
 y = [0, -l1 * cos(xo(1))];
 
-
 h1 = plot(x, y, '-o', 'MarkerSize', 10, 'MarkerFaceColor', 'black',...
     'LineWidth', 2, 'Color', [0, 0, 0]);
 % hold on;

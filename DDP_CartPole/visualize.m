@@ -1,5 +1,9 @@
-global time;
+global mc;
+global mp;
+global l;
+global g;
 global Horizon;
+global time;
 
 %% Plot Convergence Information.
 figure('Renderer', 'painters', 'Position', [10 10 1000 600], ...
@@ -63,39 +67,59 @@ hold off;
 grid;
 
 %% Animate Cart Pole Trajectory.
-% Visualize inverted pendelum trajectory.
-% fh = figure();
-% pos2 = get(gcf,'Position');  % get position of Figure(2) 
-% set(gcf,'Position', pos2 + [pos1(3)/2,0,0,0]) % Shift position of Figure(2)
-% 
-% x = [0, l1 * sin(xo(1))];
-% y = [0, -l1 * cos(xo(1))];
-% 
-% 
-% h1 = plot(x, y, '-o', 'MarkerSize', 10, 'MarkerFaceColor', 'black',...
-%     'LineWidth', 2, 'Color', [0, 0, 0]);
-% % hold on;
-% 
+fh = figure('Renderer', 'painters', 'Position', [10 10 2560 1600], ...
+       'NumberTitle', 'off', 'Name', 'Cart Pole Animation');
+pos2 = get(gcf,'Position');  % get position of Figure(2) 
+set(gcf,'Position', pos2 + [pos1(3)/2,0,0,0]) % Shift position of Figure(2)
+
+cart_w = 0.2;
+cart_h = 0.1;
+
+min_x = min(x_traj(1, :));
+max_x = max(x_traj(1, :));
+
+lims = [min_x - 2 * l, max_x + 2 * l, - 1.2 * l, 1.5 * l];
+
+disp(xo(1) + cart_w / 2)
+h1 = rectangle('Position', [xo(1) - cart_w / 2, 0, cart_w, cart_h],...
+               'Curvature', 0.2, 'FaceColor',[0 .5 .5]);
+
+x = [xo(1), xo(1) + l * sin(xo(3))];
+y = [cart_h / 2, cart_h / 2 - l * cos(xo(3))];
+
+hold on;
+h2 = plot(x, y, '-o', 'MarkerSize', 10, 'MarkerFaceColor', 'black',...
+    'LineWidth', 2, 'Color', [0, 0, 0]); 
+plot([lims(1), lims(2)], [0, 0], 'k');
+hold off;
+
 % t = text(-1.5 * l1, 1.5 * l1, 'Time: 0\Theta: 0');
-% axis([-2 * l1, 2 * l1, -2 * l1, 2 * l1])
-% axis square
+
+axis(lims);
+axis square
+axis equal
 % alpha scaled
-% 
-% theta_dot_max = max(abs(x_traj(1, :)));
-% 
-% for i = 1:length(x_traj)
-%   theta = x_traj(1, i);
-%   theta_dot = x_traj(2, i);
-%   
+
+x_dot_max = max(abs(x_traj(2, :)));
+
+for i = 1:length(x_traj)
+  x = x_traj(1, i);
+  x_dot_abs = abs(x_traj(2, i));
+  theta = x_traj(3, i);
+  
+  gc = x_dot_abs / x_dot_max;
+  bc = 1. - x_dot_abs / x_dot_max;
+  rc = i / length(x_traj) ;
+  
 %   t.String = sprintf('Time: %.2fs\nTheta: %.2frad', time(i), theta);
-%   h1.XData = [0, l1 * sin(theta)];
-%   h1.YData = [0, -l1 * cos(theta)];
-%   
-%   hold on;
-%   h2 = plot(l1 * sin(theta), -l1 * cos(theta), 'bo', 'MarkerSize',...
-%        (abs(theta_dot) / theta_dot_max) + 1e-4);
-%   hold off;
-%   
-%   drawnow()  
-%   pause(dt)
-% end
+  h1.Position = [x - cart_w / 2, 0, cart_w, cart_h];
+  hold on;
+  h2.XData = [x, x + l * sin(theta)];
+  h2.YData = [cart_h / 2, cart_h / 2 - l * cos(theta)];
+  plot(h2.XData(2), h2.YData(2), '-mo', 'LineWidth',2, 'MarkerEdgeColor',[rc, gc, bc], 'MarkerSize', 3, 'MarkerFaceColor', [rc, gc, bc]);
+  axis(lims);
+  hold off;  
+  
+  drawnow()  
+  pause(dt)
+end

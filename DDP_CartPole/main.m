@@ -31,7 +31,7 @@ g = 9.8; % Gravity in m/s^2.
 dynamics;
 
 % Solver parameters.
-Horizon = 300; % Time Horizon.
+Horizon = 400; % Time Horizon.
 num_iter = 300; % Number of Iterations
 dt = 0.01; % Discretization.
 
@@ -39,7 +39,7 @@ dt = 0.01; % Discretization.
 Q_f = zeros(4,4); % State cost. 4x4 since state is 4-dimensional.
 Q_f(1,1) = 20; % We don't care about the final x position.
 Q_f(2,2) = 200;
-Q_f(3,3) = 400;
+Q_f(3,3) = 800;
 Q_f(4,4) = 200;
 
 R = 20 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
@@ -59,7 +59,7 @@ residuals = zeros(1, num_iter); % Residual history.
 
 % Goal state:
 p_target = zeros(x_dim, 1);
-p_target(1,1) = 0.0;
+p_target(1,1) = 0.5;
 p_target(2,1) = 0.0; % Target x_dot.
 p_target(3,1) = pi; % Target theta.
 p_target(4,1) = 0.0; % Target theta_dot.

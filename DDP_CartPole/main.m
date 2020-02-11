@@ -31,7 +31,7 @@ g = 9.8; % Gravity in m/s^2.
 dynamics;
 
 % Solver parameters.
-Horizon = 1000; % Time Horizon.
+Horizon = 300; % Time Horizon.
 num_iter = 300; % Number of Iterations
 dt = 0.01; % Discretization.
 
@@ -158,6 +158,7 @@ end
 
 residuals(:,1) = residuals(:,2);
 
+time = zeros(1,Horizon);
 time(1)=0;
 for i= 2:Horizon
     time(i) =time(i-1) + dt;  

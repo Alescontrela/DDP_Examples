@@ -1,3 +1,6 @@
+global time;
+global Horizon;
+
 %% Plot Convergence Information.
 figure('Renderer', 'painters', 'Position', [10 10 1000 600], ...
        'NumberTitle', 'off', 'Name', 'Cart Pole Convergence')
@@ -41,8 +44,8 @@ grid;
 
 subplot(3,2,5);hold on
 plot(residuals,'linewidth',2); 
-xlabel('Iterations','fontsize',20)
-title('Residuals','fontsize',14);
+xlabel('Iterations','fontsize',14, 'Interpreter', 'latex')
+title('Residuals','fontsize',20, 'Interpreter', 'latex');
 pos1 = get(gcf,'Position'); % get position of Figure(1) 
 set(gcf,'Position', pos1 - [pos1(3)/2,0,0,0]) % Shift position of Figure(1) 
 % set(gca, 'YScale', 'log')
@@ -51,8 +54,8 @@ grid;
 
 subplot(3,2,6);hold on
 plot(Cost,'linewidth',2); 
-xlabel('Iterations','fontsize',14)
-title('Cost (log scale)','fontsize',14);
+xlabel('Iterations','fontsize',14, 'Interpreter', 'latex')
+title('Cost (log scale)','fontsize',20, 'Interpreter', 'latex');
 pos1 = get(gcf,'Position'); % get position of Figure(1) 
 set(gcf,'Position', pos1 - [pos1(3)/2,0,0,0]) % Shift position of Figure(1) 
 set(gca, 'YScale', 'log')

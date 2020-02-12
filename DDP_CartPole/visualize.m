@@ -4,6 +4,7 @@ global l;
 global g;
 global Horizon;
 global time;
+global p_target;
 
 %% Plot Convergence Information.
 figure('Renderer', 'painters', 'Position', [10 10 1000 600], ...
@@ -80,7 +81,6 @@ max_x = max(x_traj(1, :));
 
 lims = [min_x - 2 * l, max_x + 2 * l, - 1.2 * l, 1.5 * l];
 
-disp(xo(1) + cart_w / 2)
 h1 = rectangle('Position', [xo(1) - cart_w / 2, 0, cart_w, cart_h],...
                'Curvature', 0.2, 'FaceColor',[0 .5 .5]);
 
@@ -91,6 +91,11 @@ hold on;
 h2 = plot(x, y, '-o', 'MarkerSize', 10, 'MarkerFaceColor', 'black',...
     'LineWidth', 2, 'Color', [0, 0, 0]); 
 plot([lims(1), lims(2)], [0, 0], 'k');
+
+rectangle('Position', [p_target(1) - cart_w / 2, 0, cart_w, cart_h], 'LineStyle', '--',...
+               'Curvature', 0.2);
+plot([p_target(1), p_target(1) + l * sin(p_target(3))],...
+    [cart_h / 2, cart_h / 2 - l * cos(p_target(3))], 'k', 'LineWidth', 4);
 hold off;
 
 % t = text(-1.5 * l1, 1.5 * l1, 'Time: 0\Theta: 0');

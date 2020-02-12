@@ -19,6 +19,7 @@ global l;
 global g;
 global Horizon;
 global time;
+global p_target
 
 
 % Environment parameters.
@@ -31,18 +32,18 @@ g = 9.8; % Gravity in m/s^2.
 dynamics;
 
 % Solver parameters.
-Horizon = 400; % Time Horizon.
+Horizon = 300; % Time Horizon.
 num_iter = 300; % Number of Iterations
 dt = 0.01; % Discretization.
 
 % Costs.
 Q_f = zeros(4,4); % State cost. 4x4 since state is 4-dimensional.
-Q_f(1,1) = 20; % We don't care about the final x position.
+Q_f(1,1) = 400; % We don't care about the final x position.
 Q_f(2,2) = 200;
 Q_f(3,3) = 800;
 Q_f(4,4) = 200;
 
-R = 20 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
+R = 1 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
 
 % Initialize solution.
 % State represented as [x, x_dot, theta, theta_dot].

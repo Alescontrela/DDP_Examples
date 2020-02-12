@@ -44,19 +44,25 @@ axis([-2 * l1, 2 * l1, -2 * l1, 2 * l1])
 axis square
 alpha scaled
 
-theta_dot_max = max(abs(x_traj(1, :)));
+theta_dot_max = max(abs(x_traj(2, :)));
 
 for i = 1:length(x_traj)
   theta = x_traj(1, i);
-  theta_dot = x_traj(2, i);
+  theta_dot = abs(x_traj(2, i));
+  
+  gc = 1 - i / length(x_traj);
+  bc = theta_dot / theta_dot_max;
+  rc = i / length(x_traj);
   
   t.String = sprintf('Time: %.2fs\nTheta: %.2frad', time(i), theta);
   h1.XData = [0, l1 * sin(theta)];
   h1.YData = [0, -l1 * cos(theta)];
   
   hold on;
-  h2 = plot(l1 * sin(theta), -l1 * cos(theta), 'bo', 'MarkerSize',...
-       (abs(theta_dot) / theta_dot_max) + 1e-4);
+  plot(h1.XData(2), h1.YData(2), '-mo', 'LineWidth',2, 'MarkerEdgeColor',...
+      [rc, gc, bc], 'MarkerSize', 3, 'MarkerFaceColor', [rc, gc, bc]);
+%   h2 = plot(l1 * sin(theta), -l1 * cos(theta), 'bo', 'MarkerSize',...
+%        (abs(theta_dot) / theta_dot_max) + 1e-4);
   hold off;
   
   drawnow()  

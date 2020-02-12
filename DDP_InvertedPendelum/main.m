@@ -30,16 +30,16 @@ l1 = 1.0; % Link length in meters.
 I1 = m1 * l1^2; % Inertia in Kg*m^2.
 
 % Solver parameters.
-Horizon = 1000; % Time Horizon.
+Horizon = 500; % Time Horizon.
 num_iter = 100; % Number of Iterations
 dt = 0.01; % Discretization.
 
 % Costs.
 Q_f = zeros(2,2); % State cost. 2x2 since state is 2-dimensional.
-Q_f(1,1) = 800;
-Q_f(2,2) = 200;
+Q_f(1,1) = 6400;
+Q_f(2,2) = 400;
 
-R = 2 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
+R = 1 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
 
 % Initialize solution.
 xo = zeros(2,1);
@@ -147,6 +147,7 @@ for k = 1:num_iter
 end
 
 
+time = zeros(1, Horizon);
 time(1)=0;
 for i= 2:Horizon
     time(i) =time(i-1) + dt;  

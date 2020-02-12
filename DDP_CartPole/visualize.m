@@ -92,10 +92,16 @@ h2 = plot(x, y, '-o', 'MarkerSize', 10, 'MarkerFaceColor', 'black',...
     'LineWidth', 2, 'Color', [0, 0, 0]); 
 plot([lims(1), lims(2)], [0, 0], 'k');
 
-rectangle('Position', [p_target(1) - cart_w / 2, 0, cart_w, cart_h], 'LineStyle', '--',...
+if (Q_f(1,1) ~= 0)
+    rectangle('Position', [p_target(1) - cart_w / 2, 0, cart_w, cart_h], 'LineStyle', '--',...
                'Curvature', 0.2);
-plot([p_target(1), p_target(1) + l * sin(p_target(3))],...
-    [cart_h / 2, cart_h / 2 - l * cos(p_target(3))], 'k', 'LineWidth', 4);
+    plot([p_target(1), p_target(1) + l * sin(p_target(3))],...
+        [cart_h / 2, cart_h / 2 - l * cos(p_target(3))], 'k--', 'LineWidth', 4);    
+else
+    h3 = plot([p_target(1), p_target(1) + l * sin(p_target(3))],...
+        [cart_h / 2, cart_h / 2 - l * cos(p_target(3))], 'k--', 'LineWidth', 4);
+end
+
 hold off;
 
 % t = text(-1.5 * l1, 1.5 * l1, 'Time: 0\Theta: 0');
@@ -123,6 +129,12 @@ for i = 1:length(x_traj)
   h2.YData = [cart_h / 2, cart_h / 2 - l * cos(theta)];
   plot(h2.XData(2), h2.YData(2), '-mo', 'LineWidth',2, 'MarkerEdgeColor',[rc, gc, bc], 'MarkerSize', 3, 'MarkerFaceColor', [rc, gc, bc]);
   axis(lims);
+  
+  if (Q_f(1,1) == 0)        
+      h3.XData = [x, x + l * sin(p_target(3))];
+      h3.YData = [cart_h / 2, cart_h / 2 - l * cos(p_target(3))];
+  end
+  
   hold off;  
   
   drawnow()  

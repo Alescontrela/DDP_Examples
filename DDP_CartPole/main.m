@@ -20,6 +20,7 @@ global g;
 global Horizon;
 global time;
 global p_target
+global Q_f;
 
 
 % Environment parameters.
@@ -32,18 +33,22 @@ g = 9.8; % Gravity in m/s^2.
 dynamics;
 
 % Solver parameters.
-Horizon = 300; % Time Horizon.
-num_iter = 300; % Number of Iterations
+Horizon = 200; % Time Horizon.
+num_iter = 500; % Number of Iterations
 dt = 0.01; % Discretization.
 
 % Costs.
 Q_f = zeros(4,4); % State cost. 4x4 since state is 4-dimensional.
-Q_f(1,1) = 400; % We don't care about the final x position.
-Q_f(2,2) = 200;
-Q_f(3,3) = 800;
-Q_f(4,4) = 200;
+Q_f(1,1) = 5000; % X position cost.
+Q_f(2,2) = 100;  % X velocity cost.
+Q_f(3,3) = 15000; % Pole angle cost.
+Q_f(4,4) = 100; % Pole angular velocity cost.
 
-R = 1 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
+if ~(all(eig(Q_f) >= 0))
+    error('Cost matrix Q_f not positive semi-definite.')
+end
+
+R = 15 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
 
 % Initialize solution.
 % State represented as [x, x_dot, theta, theta_dot].
@@ -60,7 +65,7 @@ residuals = zeros(1, num_iter); % Residual history.
 
 % Goal state:
 p_target = zeros(x_dim, 1);
-p_target(1,1) = 0.5;
+p_target(1,1) = -1.0;
 p_target(2,1) = 0.0; % Target x_dot.
 p_target(3,1) = pi; % Target theta.
 p_target(4,1) = 0.0; % Target theta_dot.
@@ -147,7 +152,7 @@ for k = 1:num_iter
     [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma);
     Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
     if (k ~= 1)
-        residuals(:, k) = abs(Cost(:, k - 1)) - abs(Cost(:, k));
+        residuals(:, k) = abs(Cost(:, k - 1) - Cost(:, k));
     end
 %     x1(k,:) = x_traj(1,:);
 

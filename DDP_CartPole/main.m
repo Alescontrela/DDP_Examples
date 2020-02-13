@@ -21,6 +21,7 @@ global Horizon;
 global time;
 global p_target
 global Q_f;
+global dt;
 
 
 % Environment parameters.
@@ -33,7 +34,7 @@ g = 9.8; % Gravity in m/s^2.
 dynamics;
 
 % Solver parameters.
-Horizon = 200; % Time Horizon.
+Horizon = 1000; % Time Horizon.
 num_iter = 500; % Number of Iterations
 dt = 0.01; % Discretization.
 

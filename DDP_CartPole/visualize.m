@@ -5,6 +5,7 @@ global g;
 global Horizon;
 global time;
 global p_target;
+global dt;
 
 %% Plot Convergence Information.
 figure('Renderer', 'painters', 'Position', [10 10 1000 600], ...
@@ -113,6 +114,17 @@ axis equal
 
 x_dot_max = max(abs(x_traj(2, :)));
 
+% Save video.
+save_video = false;
+
+if (save_video)
+    video_filepath = 'cart_pole_ddp';
+    myVideo = VideoWriter(video_filepath, 'MPEG-4'); %open video file
+    myVideo.FrameRate = round(1 / dt);  %can adjust this, 5 - 10 works well for me
+    myVideo.Quality = 99;
+    open(myVideo)
+end
+
 for i = 1:length(x_traj)
   x = x_traj(1, i);
   x_dot_abs = abs(x_traj(2, i));
@@ -138,5 +150,15 @@ for i = 1:length(x_traj)
   hold off;  
   
   drawnow()  
+  
+  if (save_video)
+      frame = getframe(gcf); %get frame
+      writeVideo(myVideo, frame);
+  end
+  
   pause(dt)
+end
+
+if (save_video)
+    close(myVideo)
 end

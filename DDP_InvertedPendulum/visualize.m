@@ -46,6 +46,17 @@ alpha scaled
 
 theta_dot_max = max(abs(x_traj(2, :)));
 
+% Save video.
+save_video = false;
+
+if (save_video)
+    video_filepath = 'ip_ddp';
+    myVideo = VideoWriter(video_filepath, 'MPEG-4'); %open video file
+    myVideo.FrameRate = round(1 / dt);  %can adjust this, 5 - 10 works well for me
+    myVideo.Quality = 99;
+    open(myVideo)
+end
+
 for i = 1:length(x_traj)
   theta = x_traj(1, i);
   theta_dot = abs(x_traj(2, i));
@@ -66,5 +77,15 @@ for i = 1:length(x_traj)
   hold off;
   
   drawnow()  
+  
+  if (save_video)
+      frame = getframe(gcf); %get frame
+      writeVideo(myVideo, frame);
+  end
+  
   pause(dt)
+end
+
+if (save_video)
+    close(myVideo)
 end

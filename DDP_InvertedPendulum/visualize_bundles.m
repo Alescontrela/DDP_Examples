@@ -3,6 +3,8 @@ global time;
 global visualizing_bundles;
 global num_iter;
 
+clear all;
+close all;
 
 visualizing_bundles = 1;
 bundle_iters = 20;

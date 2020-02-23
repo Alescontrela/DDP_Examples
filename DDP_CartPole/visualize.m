@@ -6,6 +6,8 @@ global Horizon;
 global time;
 global p_target;
 global dt;
+global mus;
+global sigmas;
 
 %% Plot Convergence Information.
 figure('Renderer', 'painters', 'Position', [10 10 1000 600], ...
@@ -17,6 +19,10 @@ plot(time,x_traj(1,:),'linewidth',4);
 plot(time,p_target(1,1)*ones(1,Horizon),'red','linewidth',4)
 title('$X$','fontsize',20, 'Interpreter', 'latex');
 xlabel('$t$','fontsize',14, 'Interpreter', 'latex');
+for i = 1:1:length(mus)
+    line([min(time), max(time)], [mus(i), mus(i)],...
+    'Color', 'green', 'LineStyle', '--');
+end
 hold off;
 grid;
 
@@ -101,6 +107,27 @@ if (Q_f(1,1) ~= 0)
 else
     h3 = plot([p_target(1), p_target(1) + l * sin(p_target(3))],...
         [cart_h / 2, cart_h / 2 - l * cos(p_target(3))], 'k--', 'LineWidth', 4);
+end
+
+for i = 1:1:length(mus)
+    mu = mus(i);    
+    r = sigmas(i) / 100;
+ 
+    ang=0:0.01:2*pi; 
+    xp=r*cos(ang);
+    yp=r*sin(ang);
+    plot(mu+xp,yp);
+
+%     x1 = (mu(1) - 1:0.001:(mu(1) + 1));
+%     x2 = (mu(2) - 1:0.01:(mu(2) + 1));
+%         
+%     [X1,X2] = meshgrid(x1,x2);
+%     X = [X1(:) X2(:)];
+%     
+%     y_g = mvnpdf(X,mu,sigma);
+%     y_g = reshape(y_g,length(x2),length(x1));
+%     
+%     contour(x1,x2,y_g)
 end
 
 hold off;

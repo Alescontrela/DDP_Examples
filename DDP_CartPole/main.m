@@ -22,7 +22,22 @@ global time;
 global p_target
 global Q_f;
 global dt;
+global mus;
+global sigmas;
 
+
+use_obstacles = false;
+% Add obstacles to the cart x position. Obstacles add a "floor is lava"
+% effect to the trajectory, whereby the robot will want to speed past
+% obstacles to avoid accruing large losses.
+
+if use_obstacles
+    mus = [-0.5]; % Obstacle position.
+    sigmas = [10]; % Obstacle weight.
+else
+    mus = [];
+    sigmas = [];
+end
 
 % Environment parameters.
 mc = 1.0; % Cart mass in Kg.
@@ -35,7 +50,7 @@ dynamics;
 
 % Solver parameters.
 Horizon = 1000; % Time Horizon.
-num_iter = 500; % Number of Iterations
+num_iter = 400; % Number of Iterations
 dt = 0.01; % Discretization.
 
 % Costs.
@@ -112,7 +127,8 @@ for k = 1:num_iter
     % Compute value function at final timestep, its gradient, and its jacobian.
     Vxx(:,:,Horizon)= Q_f;
     Vx(:,Horizon) = Q_f * (x_traj(:,Horizon) - p_target); 
-    V(Horizon) = 0.5 * (x_traj(:,Horizon) - p_target)' * Q_f * (x_traj(:,Horizon) - p_target); 
+    V(Horizon) = 0.5 * (x_traj(:,Horizon) - p_target)' * Q_f * (x_traj(:,Horizon) - p_target);
+    
     % Backpropagation of the Value Function.
     for j = (Horizon-1):-1:1
         % Quu = Luu + B^T * Vxx * B

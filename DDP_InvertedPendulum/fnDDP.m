@@ -1,14 +1,9 @@
 function [u, cost] = fnDDP(x,num_iter, dt, Q_f, R, p_target, gamma,...
-    sigma, u_init)
+    sigma, u_init, env_params)
 
 global Horizon;
 
-if nargin < 9 
-    u_k = zeros(1,Horizon-1); % Initial control.
-else
-    u_k = u_init;
-end
-
+u_k = u_init;
 du_k = zeros(1,Horizon-1); % Initial control variation.
 
 xo = x;
@@ -36,7 +31,7 @@ for k = 1:num_iter
         P_k(:,:,j) = dt * l_ux; % Lux.
 
         % Linearize the dynamics using first order taylor expansion.
-        [Fx,Fu] = fnState_And_Control_Transition_Matrices(x_traj(:,j),u_k(:,j),du_k(:,j),dt);
+        [Fx,Fu] = fnState_And_Control_Transition_Matrices(x_traj(:,j),u_k(:,j),du_k(:,j),dt, env_params);
         A(:,:,j) = eye(2,2) + Fx * dt;
         B(:,:,j) = Fu * dt;  
     end
@@ -88,7 +83,7 @@ for k = 1:num_iter
     u_k = u_new;
 
     % Create new rollout.
-    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma);
+    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma, env_params);
 end
 
 cost = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);

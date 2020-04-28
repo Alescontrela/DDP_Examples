@@ -18,58 +18,42 @@ global time;
 global p_target
 global Q_f;
 global dt;
-global mus;
-global sigmas;
 
-
-use_obstacles = false;
-% Add obstacles to the cart x position. Obstacles add a "floor is lava"
-% effect to the trajectory, whereby the robot will want to speed past
-% obstacles to avoid accruing large losses.
-
-if use_obstacles
-    mus = [-0.5]; % Obstacle position.
-    sigmas = [10]; % Obstacle weight.
-else
-    mus = [];
-    sigmas = [];
-end
-
-% Environment parameters.
-mc = 1.0; % Cart mass in Kg.
-mp = 0.01; % Pole mass in Kg.
-l = 0.25; % Length of the pole in m.
-g = 9.8; % Gravity in m/s^2.
+% Quadcopter parameters.
+m = 0.5;
+Ixx = 0.0032;
+Iyy = 0.0032;
+Izz = 0.0055;
+l = 0.17;
+g = 9.81;
+kt = 0.01691;
 
 % Obtain expressions for F, Fx, Fu, & Fb.
-dynamics = fnDynamics(mc, mp, l, g);
-dynamics;
+dynamics = fnDynamics(m, Ixx, Iyy, Izz, l, kt, g);
 
 % Solver parameters.
-Horizon = 1000; % Time Horizon.
-num_iter = 400; % Number of Iterations
+Horizon = 200; % Time Horizon.
+num_iter = 1000; % Number of Iterations
 dt = 0.01; % Discretization.
 
-% Costs.
-Q_f = zeros(4,4); % State cost. 4x4 since state is 4-dimensional.
-Q_f(1,1) = 5000; % X position cost.
-Q_f(2,2) = 100;  % X velocity cost.
-Q_f(3,3) = 15000; % Pole angle cost.
-Q_f(4,4) = 100; % Pole angular velocity cost.
+% State costs.
+Q_f_diag = [100, 100, 100, 20, 20, 20, 100, 100, 100, 20, 20, 20];
+Q_f = diag(Q_f_diag);
 
 if ~(all(eig(Q_f) >= 0))
     error('Cost matrix Q_f not positive semi-definite.')
 end
 
-R = 15 * eye(1,1); % Control cost. 1x1 since control is 1-dimensional.
+% Control costs.
+R = 3 * eye(4, 4); 
 
 % Initialize solution.
 % State represented as [x, x_dot, theta, theta_dot].
-xo = zeros(4,1);
+xo = zeros(12,1);
 x_dim = length(xo);
 x_traj = zeros(x_dim,Horizon); % Initial trajectory.
 
-u_k = zeros(1,Horizon-1); % Initial control.
+u_k = zeros(4,Horizon-1); % Initial control.
 u_dim = size(u_k, 1);
 du_k = zeros(u_dim,Horizon-1); % Initial control variation.
 
@@ -78,16 +62,16 @@ residuals = zeros(1, num_iter); % Residual history.
 
 % Goal state:
 p_target = zeros(x_dim, 1);
-p_target(1,1) = -1.0;
-p_target(2,1) = 0.0; % Target x_dot.
-p_target(3,1) = pi; % Target theta.
-p_target(4,1) = 0.0; % Target theta_dot.
+p_target(1,1) = 3.0; % Target x
+p_target(2,1) = 3.0; % Target y.
+p_target(3,1) = 0.0; % Target z.
+p_target(7, 1) = 2 * pi; % Double corkscrew.
 
 % Add noise.
-sigma = 0.0;
+sigma = 0.00;
 
 % Learning Rate
-gamma = 0.2;
+gamma = 0.01;
 
 for k = 1:num_iter
     % Preallocate cost memory.
@@ -100,7 +84,7 @@ for k = 1:num_iter
     A = zeros(x_dim, x_dim, Horizon-1);
     B = zeros(x_dim, u_dim, Horizon-1);
     for  j = 1:(Horizon-1)    
-        [l0,l_x,l_xx,l_u,l_uu,l_ux] = fnCost(x_traj(:,j), u_k(:,j), j,R,dt);
+        [l0,l_x,l_xx,l_u,l_uu,l_ux] = fnCost(x_traj(:,j), u_k(:,j), j, R, dt);
         % Compute loss function gradients for the current timestep.
         % Quadratic Approximations of the cost function.
         q0(j) = dt * l0; % L.
@@ -156,7 +140,7 @@ for k = 1:num_iter
     for i=1:(Horizon-1)
         % Find the controls.
         du = l_k(:,i) + L_k(:,:,i) * dx;
-        dx = A(:,:,i) * dx + B(:,:,i) * du;  
+        dx = A(:,:,i) * dx + B(:,:,i) * du;
         u_new(:,i) = u_k(:,i) + gamma * du;
     end
 
@@ -170,7 +154,7 @@ for k = 1:num_iter
     end
 %     x1(k,:) = x_traj(1,:);
 
-    if mod(k, 10) == 0
+    if mod(k, 1) == 0
         fprintf('iLQG Iteration %d,  Current Cost = %e \n',k,Cost(1,k));
     end
 

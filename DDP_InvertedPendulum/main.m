@@ -13,14 +13,8 @@ if ~visualizing_bundles
     visualizing_bundles=false;
 end
 
-global m1;
-global I1;
-global b1;
-global g;
-global l1;
 global Horizon;
 global time;
-
 
 % Environment parameters.
 m1 = 1.4; % Link mass in Kg.
@@ -28,6 +22,7 @@ g = 9.8; % Gravity in m/s^2.
 b1 = 0; % Friction coefficient.
 l1 = 1.0; % Link length in meters.
 I1 = m1 * l1^2; % Inertia in Kg*m^2.
+env_params = struct('g', g, 'b1', b1, 'l1',  l1, 'I1', I1);
 
 % Solver parameters.
 Horizon = 500; % Time Horizon.
@@ -85,7 +80,8 @@ for k = 1:num_iter
         P_k(:,:,j) = dt * l_ux; % Lux.
 
         % Linearize the dynamics using first order taylor expansion.
-        [Fx,Fu] = fnState_And_Control_Transition_Matrices(x_traj(:,j),u_k(:,j),du_k(:,j),dt);
+        [Fx,Fu] = fnState_And_Control_Transition_Matrices(x_traj(:,j),...
+            u_k(:,j),du_k(:,j),dt, env_params);
         A(:,:,j) = eye(2,2) + Fx * dt;
         B(:,:,j) = Fu * dt;  
     end
@@ -137,7 +133,7 @@ for k = 1:num_iter
     u_k = u_new;
 
     % Create new rollout.
-    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma);
+    [x_traj] = fnSimulate(xo,u_new,Horizon,dt,sigma, env_params);
     Cost(:,k) = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
 %     x1(k,:) = x_traj(1,:);
 

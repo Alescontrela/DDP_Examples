@@ -16,9 +16,19 @@ global time;
 % Environment parameters.
 m1 = 1.4; % Link mass in Kg.
 g = 9.8; % Gravity in m/s^2.
-b1 = 0; % Friction coefficient.
+b1 = 0.5; % Friction coefficient.
 l1 = 1.0; % Link length in meters.
 I1 = m1 * l1^2; % Inertia in Kg*m^2.
+
+env_params_nominal = struct('g', g, 'b1', b1, 'l1',  l1, 'I1', I1);
+
+% "Actual" environment params, which are affected by measurement error,
+% which is modeled as gaussian distributed noise.
+param_sigma = 0.5;
+env_params_noisy = struct('g', g + g * param_sigma * randn,...
+                          'b1', b1 + b1 * param_sigma * randn,...
+                          'l1', l1 + l1 * param_sigma * randn,...
+                          'I1', I1 + I1 * param_sigma * randn);
 
 % Solver parameters.
 Horizon = 50; % Time Horizon.
@@ -41,8 +51,8 @@ p_target(1,1) = pi; % Target theta.
 p_target(2,1) = 0.0; % Target theta_dot.
 
 % Add noise.
-sigma_nominal = 0.05;
-sigma_real = 0.1;
+sigma_nominal = 0.1;
+sigma_real = 0.15;
 
 % Learning Rate
 gamma = 0.5;
@@ -54,13 +64,13 @@ x_traj = []; % Initial trajectory
 u_init = zeros(1,Horizon-1);
 
 i = 1;
-max_num_iters = 400;
+max_num_iters = 600;
 
 while 1
-    [u, cost] = fnDDP(x,num_iter, dt, Q_f, R, p_target, gamma, sigma_nominal, u_init);
+    [u, cost] = fnDDP(x,num_iter, dt, Q_f, R, p_target, gamma, sigma_nominal, u_init, env_params_nominal);
     u_init = u;
     Cost = [Cost cost];
-    [x_new] = fnSimulate(x,u,Horizon,dt,sigma_real);
+    [x_new] = fnSimulate(x,u,Horizon,dt,sigma_real, env_params_noisy, 2);
     x = x_new(:,2);
     x_traj = [x_traj x];
     
